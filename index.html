@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Northstar Projects | Spend Analytics & CFO Intelligence Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-wrapper">
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="header-inner">
+        <div class="brand-section">
+          <div class="brand-logo">N</div>
+          <div class="brand-details">
+            <h1>
+              Northstar Projects Pvt Ltd
+              <span class="pill">CFO Intelligence</span>
+            </h1>
+            <p>Spend Analytics, Forensic Audit & Budgetary Control Dashboard &bull; Jan 2026 &ndash; Sep 2026</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button id="btn-export-csv" class="btn btn-secondary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export Filtered CSV
+          </button>
+          <button class="btn btn-primary" onclick="window.print()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            CFO Briefing Report
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Forensic Quick Filter Chips Bar -->
+    <div class="quick-chips-bar">
+      <div class="quick-chips-inner">
+        <span class="chip-label">Quick Lenses:</span>
+        <button class="filter-chip active" data-preset="all">All Spend (910)</button>
+        <button class="filter-chip chip-danger" data-preset="forensic">Non-Compliant (143)</button>
+        <button class="filter-chip chip-danger" data-preset="smurfing">Smurfing (&lt;₹50K)</button>
+        <button class="filter-chip chip-danger" data-preset="duplicate">Duplicate Invoices (4)</button>
+        <button class="filter-chip chip-warning" data-preset="missing-rcpt">Missing Receipts (₹5.93M)</button>
+        <button class="filter-chip chip-warning" data-preset="upi-reimb">UPI & Reimbursements (₹3.19 Cr)</button>
+        <button class="filter-chip chip-purple" data-preset="foreign-curr">Domestic USD/SGD (₹5.2M)</button>
+        <button class="filter-chip" data-preset="weekend">Weekend Spends (₹13.1M)</button>
+      </div>
+    </div>
+
+    <!-- Global Multi-Dimensional Filter Bar -->
+    <div class="filter-container">
+      <div class="filter-inner">
+        <div class="filter-group">
+          <label>Month</label>
+          <select id="filter-month" class="filter-select">
+            <option value="all">All Months (Jan-Sep)</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Department</label>
+          <select id="filter-dept" class="filter-select">
+            <option value="all">All Departments</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Location / Site</label>
+          <select id="filter-loc" class="filter-select">
+            <option value="all">All Sites & HQ</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Project / Cost Centre</label>
+          <select id="filter-proj" class="filter-select">
+            <option value="all">All Projects</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Spend Category</label>
+          <select id="filter-cat" class="filter-select">
+            <option value="all">All Categories</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Payment Method</label>
+          <select id="filter-pm" class="filter-select">
+            <option value="all">All Payment Methods</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Policy Compliance</label>
+          <select id="filter-comp" class="filter-select">
+            <option value="all">All Transactions</option>
+            <option value="Yes">Compliant Only</option>
+            <option value="No">Non-Compliant Only</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Receipt Status</label>
+          <select id="filter-rcpt" class="filter-select">
+            <option value="all">All</option>
+            <option value="Yes">Receipt Attached</option>
+            <option value="No">Missing Receipt</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Status</label>
+          <select id="filter-status" class="filter-select">
+            <option value="all">All Statuses</option>
+            <option value="Completed">Completed</option>
+            <option value="Pending">Pending</option>
+            <option value="Declined">Declined</option>
+            <option value="Reversed">Reversed</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Search Ledger</label>
+          <input type="text" id="search-input" class="filter-input" placeholder="Vendor, Emp, ID, Note...">
+        </div>
+        <div class="filter-actions">
+          <button id="btn-reset-filters" class="btn btn-secondary" style="width: 100%;">
+            Reset Filters
+            <span id="active-filter-badge" class="badge badge-info" style="display: none;">0</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="tabs-navigation">
+      <div class="tabs-inner">
+        <button class="tab-btn active" data-tab="overview">
+          Executive Cockpit
+        </button>
+        <button class="tab-btn" data-tab="budgets">
+          Budget vs Actuals
+        </button>
+        <button class="tab-btn" data-tab="forensic">
+          Forensic Audit
+          <span class="tab-badge badge-alert">High Risk</span>
+        </button>
+        <button class="tab-btn" data-tab="vendors">
+          Vendors & Concentration
+        </button>
+        <button class="tab-btn" data-tab="approvals">
+          Governance & Approvers
+        </button>
+        <button class="tab-btn" data-tab="ledger">
+          Transaction Ledger
+        </button>
+        <button class="tab-btn" data-tab="report">
+          CFO Insights & Memo
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="main-content">
+      <!-- High Level Dynamic KPI Cards -->
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-title">Gross Total Spend</span>
+            <div class="kpi-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+          </div>
+          <div id="kpi-total-spend" class="kpi-value">₹0</div>
+          <div id="kpi-spend-sub" class="kpi-subtext">Loading summary...</div>
+        </div>
+
+        <div class="kpi-card card-cyan">
+          <div class="kpi-header">
+            <span class="kpi-title">Budget Utilization</span>
+            <div class="kpi-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+            </div>
+          </div>
+          <div id="kpi-budget-util" class="kpi-value">0%</div>
+          <div id="kpi-budget-sub" class="kpi-subtext">Allocated Budget: ₹0</div>
+        </div>
+
+        <div class="kpi-card card-rose">
+          <div class="kpi-header">
+            <span class="kpi-title">Policy Breach Exposure</span>
+            <div class="kpi-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+          </div>
+          <div id="kpi-policy-breach" class="kpi-value">₹0</div>
+          <div id="kpi-policy-sub" class="kpi-subtext">0% of filtered spend</div>
+        </div>
+
+        <div class="kpi-card card-amber">
+          <div class="kpi-header">
+            <span class="kpi-title">Unverified Receipts</span>
+            <div class="kpi-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+          </div>
+          <div id="kpi-missing-rcpt" class="kpi-value">₹0</div>
+          <div id="kpi-missing-sub" class="kpi-subtext">0 unverified transactions</div>
+        </div>
+
+        <div class="kpi-card card-purple">
+          <div class="kpi-header">
+            <span class="kpi-title">Uncontrolled Disbursement</span>
+            <div class="kpi-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+          </div>
+          <div id="kpi-uncontrolled-pm" class="kpi-value">0%</div>
+          <div id="kpi-uncontrolled-sub" class="kpi-subtext">UPI + Reimbursement Share</div>
+        </div>
+
+        <div class="kpi-card card-emerald">
+          <div class="kpi-header">
+            <span class="kpi-title">Approval Velocity</span>
+            <div class="kpi-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+          </div>
+          <div id="kpi-tat" class="kpi-value">0h</div>
+          <div id="kpi-tat-sub" class="kpi-subtext">Average turnaround time</div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 1: EXECUTIVE COCKPIT ================= -->
+      <div id="tab-overview" class="tab-pane">
+        <div class="dashboard-grid">
+          <!-- Monthly Spend Trend -->
+          <div class="col-8">
+            <div class="content-card">
+              <div class="card-title-row">
+                <div>
+                  <h3>Monthly Spend Trajectory</h3>
+                  <div class="card-subtitle">Spend trend broken down by Completed, Pending, and Reversed/Declined transactions</div>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="chart-monthly-trend"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Method Distribution -->
+          <div class="col-4">
+            <div class="content-card">
+              <div class="card-title-row">
+                <div>
+                  <h3>Disbursement Channel Mix</h3>
+                  <div class="card-subtitle">Share of spend across payment methods</div>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="chart-pm-donut"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Categories -->
+          <div class="col-6">
+            <div class="content-card">
+              <div class="card-title-row">
+                <div>
+                  <h3>Top Spend Categories</h3>
+                  <div class="card-subtitle">Major operational and procurement expenses</div>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="chart-category-spend"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Department Spend vs Budget -->
+          <div class="col-6">
+            <div class="content-card">
+              <div class="card-title-row">
+                <div>
+                  <h3>Department Spend vs Allocated Budget</h3>
+                  <div class="card-subtitle">Comparing actual outlays against planned departmental budgets</div>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="chart-dept-spend"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Location Spend -->
+          <div class="col-7">
+            <div class="content-card">
+              <div class="card-title-row">
+                <div>
+                  <h3>Site & Office Location Distribution</h3>
+                  <div class="card-subtitle">Regional spend across project sites vs Bengaluru HQ</div>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="chart-location-spend"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Policy Reasons -->
+          <div class="col-5">
+            <div class="content-card">
+              <div class="card-title-row">
+                <div>
+                  <h3>Policy Violations Breakdown</h3>
+                  <div class="card-subtitle">Primary reasons for automated compliance exceptions</div>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="chart-policy-reasons"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 2: BUDGET VS ACTUALS ================= -->
+      <div id="tab-budgets" class="tab-pane" style="display: none;">
+        <!-- High-risk Callout for Finance HQ -->
+        <div class="alert-callout" style="background: rgba(245, 158, 11, 0.08); border-left-color: var(--accent-amber);">
+          <h4 style="color: #b45309;">Critical Budget Anomaly: Central Finance Department Chronic Overruns</h4>
+          <p>
+            <strong>Finance HQ - Bengaluru</strong> exceeded its budget in <strong>every single month</strong> (Jan &ndash; Sep 2026), generating an aggregate variance of <strong>+₹2.82 Million (over budget by 138% to 313%)</strong>.
+            Analysis reveals Finance personnel booked ₹1.83M in Professional Services (Apex Consulting), ₹819K in Equipment Rentals (PowerGen Rentals), and ₹434K in Construction Materials (BuildMart Supplies) directly under the central Finance cost center rather than attributing to project site job codes!
+          </p>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="col-12">
+            <div class="content-card">
+              <div class="card-title-row">
+                <div>
+                  <h3>Departmental Budget Performance Matrix</h3>
+                  <div class="card-subtitle">Aggregate 9-month budget allocation vs actual recorded expenditure</div>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Department</th>
+                      <th>Allocated Budget</th>
+                      <th>Actual Spend</th>
+                      <th>Variance (INR)</th>
+                      <th>Utilization %</th>
+                      <th>Control Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="budget-variance-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="content-card">
+              <div class="card-title-row">
+                <div>
+                  <h3>Site & Location Budget Variance Table</h3>
+                  <div class="card-subtitle">Geographic budget burn rate across project sites and central headquarters</div>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Site / Office</th>
+                      <th>Total Budget</th>
+                      <th>Actual Spend</th>
+                      <th>Variance (INR)</th>
+                      <th>Utilization %</th>
+                      <th>Risk Level</th>
+                    </tr>
+                  </thead>
+                  <tbody id="site-variance-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 3: FORENSIC AUDIT CENTER ================= -->
+      <div id="tab-forensic" class="tab-pane" style="display: none;">
+        <div class="alert-callout">
+          <h4>Forensic Audit & Financial Leakage Hub</h4>
+          <p>
+            This section isolates anomalies intentionally embedded or emergent in company transactions, including structuring to evade approvals, double-billing, manager overrides of non-compliant claims, foreign exchange leakages, and unmanaged cash disbursements.
+          </p>
+        </div>
+
+        <div class="dashboard-grid">
+          <!-- Anomaly 1: Smurfing -->
+          <div class="col-6">
+            <div class="forensic-card">
+              <div class="forensic-header">
+                <h4>1. Structuring & Smurfing: Evading ₹50,000 Approval Limit</h4>
+                <span class="badge badge-danger">High Severity Fraud Risk</span>
+              </div>
+              <div class="forensic-body">
+                <p>
+                  <strong>Employee Diya Sharma (E1016)</strong> at <em>Pune Site 1</em> repeatedly executed pairs of UPI transactions to <strong>Metro Hardware</strong>, exactly calibrated at <strong>₹49,800.00</strong> and <strong>₹49,750.00</strong> on the same calendar day for <em>"Urgent site tools purchase"</em>:
+                </p>
+                <ul style="margin: 8px 0 12px 18px; font-size: 12px; color: var(--text-secondary);">
+                  <li><strong>14-Jul-2026:</strong> T000905 (₹49,800) + T000906 (₹49,750) = <strong>₹99,550</strong></li>
+                  <li><strong>22-Aug-2026:</strong> T000907 (₹49,800) + T000908 (₹49,750) = <strong>₹99,550</strong></li>
+                  <li><strong>08-Sep-2026:</strong> T000909 (₹49,800) + T000910 (₹49,750) = <strong>₹99,550</strong></li>
+                </ul>
+                <p>
+                  <strong>CFO Action:</strong> Total structured spend is <strong>₹298,650</strong>. This pattern circumvents the corporate ₹50,000 single-transaction approval tier. Immediate site audit and vendor inventory reconciliation required.
+                </p>
+                <div style="margin-top: 12px;">
+                  <button class="btn btn-danger" onclick="window.applyPreset('smurfing')">Filter Ledger to These 6 Transactions</button>
+                </div>
+                <div id="forensic-smurfing-list" style="margin-top: 14px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Anomaly 2: Duplicate Invoices -->
+          <div class="col-6">
+            <div class="forensic-card">
+              <div class="forensic-header">
+                <h4>2. Double Billing & Duplicate Invoices</h4>
+                <span class="badge badge-danger">Direct Cash Loss</span>
+              </div>
+              <div class="forensic-body">
+                <p>
+                  Central Accounts Payable controls failed to deduplicate invoice submissions. <strong>4 distinct pairs of identical transactions</strong> were processed and approved under the exact same Invoice/Receipt ID, resulting in <strong>₹188,084 in duplicate disbursements</strong>:
+                </p>
+                <div id="forensic-duplicates-list" style="margin: 10px 0;"></div>
+                <p style="font-size: 12px; color: var(--text-muted);">
+                  Root cause: Lack of system-level unique constraint on <code>Invoice / Receipt ID</code> during manual entry and employee reimbursement claim submissions.
+                </p>
+                <div style="margin-top: 12px;">
+                  <button class="btn btn-danger" onclick="window.applyPreset('duplicate')">Isolate Duplicate Claims in Ledger</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Anomaly 3: Manager Overrides & Auto-Approvals -->
+          <div class="col-6">
+            <div class="forensic-card" style="border-color: rgba(245, 158, 11, 0.3);">
+              <div class="forensic-header">
+                <h4 style="color: #b45309;">3. Policy Override & Governance Breakdown</h4>
+                <span class="badge badge-warning">Internal Controls Breach</span>
+              </div>
+              <div class="forensic-body">
+                <p>
+                  Of 143 non-compliant transactions (₹13.78M), <strong>103 were Approved by managers</strong> (₹9.09M) and <strong>15 were Auto-Approved by the system</strong> (₹1.42M). Only 22 were declined and 3 were reversed!
+                </p>
+                <div style="background: rgba(255,255,255,0.02); border-radius: 6px; padding: 12px; margin: 10px 0; font-size: 13px;">
+                  <div>&bull; <strong>Auto-Approved Non-Compliant Spend:</strong> ₹1,424,456 (Includes ₹265K to SiteServe with missing receipts, and ₹219K to BuildMart Supplies with missing approval!).</div>
+                  <div>&bull; <strong>Top Overriding Approvers:</strong> Diya Mehta (14 non-compliant approved), Rahul Iyer (12 approved), Varun Gupta (11 approved).</div>
+                </div>
+                <button class="btn btn-secondary" onclick="window.applyPreset('forensic')">View All Overridden Policy Breaches</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Anomaly 4: Foreign Currency Domestic Billing -->
+          <div class="col-6">
+            <div class="forensic-card" style="border-color: rgba(139, 92, 246, 0.3);">
+              <div class="forensic-header">
+                <h4 style="color: var(--volopay-purple);">4. Domestic Vendors Billed in Foreign FX (USD/SGD)</h4>
+                <span class="badge badge-purple">Forex Leakage</span>
+              </div>
+              <div class="forensic-body">
+                <p>
+                  <strong>88 domestic transactions (₹5.24 Million)</strong> were billed in USD (61 txs) and SGD (27 txs) for purely domestic vendors located in India:
+                </p>
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                  Examples: SiteServe Contractors (USD 3,862), Metro Hardware (USD 899), PowerGen Rentals (SGD 2,185), and QuickCab Mobility (Indian cab aggregator charged in SGD & USD!).
+                </p>
+                <div id="forensic-fx-list" style="margin-top: 10px;"></div>
+                <div style="margin-top: 12px;">
+                  <button class="btn btn-secondary" onclick="window.applyPreset('foreign-curr')">Filter FX Domestic Transactions</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 4: VENDORS ================= -->
+      <div id="tab-vendors" class="tab-pane" style="display: none;">
+        <div class="dashboard-grid">
+          <div class="col-7">
+            <div class="content-card">
+              <div class="card-title-row">
+                <div>
+                  <h3>Top 10 Strategic Vendors by Spend</h3>
+                  <div class="card-subtitle">Highest volume suppliers and service partners</div>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="chart-top-vendors"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-5">
+            <div class="content-card">
+              <div class="card-title-row">
+                <div>
+                  <h3>Vendor Concentration & Working Capital Risks</h3>
+                  <div class="card-subtitle">Pareto analysis and credit terms compliance</div>
+                </div>
+              </div>
+              <div style="font-size: 13px; line-height: 1.6; color: var(--text-secondary);">
+                <div class="insight-box highlight">
+                  <strong>Extreme Supplier Concentration:</strong>
+                  Top 3 vendors (SiteServe Contractors ₹11.54M, BuildMart Supplies ₹7.25M, PowerGen Rentals ₹5.88M) represent <strong>51.6% (₹24.67M)</strong> of total corporate spend.
+                </div>
+                <div class="insight-box warning">
+                  <strong>Working Capital Leakage on Terms:</strong>
+                  Vendor master defines 30-day and 15-day credit terms. However, employees are routinely paying these vendors via instant UPI or personal credit card reimbursements rather than utilizing standard corporate trade credit!
+                </div>
+                <div class="insight-box danger">
+                  <strong>Unregistered / Informal Merchants:</strong>
+                  ₹1,125,423 was disbursed to informal merchant descriptions (<em>"Independent Vendor"</em>, <em>"Local Merchant"</em>, <em>"Employee Claim"</em>, <em>"Client Venue"</em>) with minimal tax compliance (GST/TDS) paper trails.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="content-card">
+              <div class="card-title-row">
+                <div>
+                  <h3>Complete Vendor Master & Spend Analysis</h3>
+                  <div class="card-subtitle">Vendor criticality, agreed payment terms, and actual spend disbursement methods</div>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Vendor</th>
+                      <th>Category</th>
+                      <th>Criticality</th>
+                      <th>Agreed Terms</th>
+                      <th>Primary Spend Method</th>
+                      <th>Total Spend (INR)</th>
+                      <th>Share %</th>
+                      <th>Tx Count</th>
+                    </tr>
+                  </thead>
+                  <tbody id="vendor-analysis-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 5: APPROVALS & EMPLOYEES ================= -->
+      <div id="tab-approvals" class="tab-pane" style="display: none;">
+        <div class="dashboard-grid">
+          <div class="col-5">
+            <div class="content-card">
+              <div class="card-title-row">
+                <div>
+                  <h3>Approval Turnaround Time Distribution</h3>
+                  <div class="card-subtitle">Hours taken from submission to final sign-off</div>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="chart-tat-dist"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-7">
+            <div class="content-card">
+              <div class="card-title-row">
+                <div>
+                  <h3>Approver Governance & Accountability Scorecard</h3>
+                  <div class="card-subtitle">Tracking managers who approve non-compliant or missing receipt claims</div>
+                </div>
+              </div>
+              <div class="table-responsive" style="max-height: 380px; overflow-y: auto;">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Approver</th>
+                      <th>Approved Spend</th>
+                      <th>Approved</th>
+                      <th>Rejected</th>
+                      <th>Non-Compliant Approved</th>
+                      <th>Missing Receipts Approved</th>
+                      <th>Avg TAT</th>
+                    </tr>
+                  </thead>
+                  <tbody id="approvers-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="content-card">
+              <div class="card-title-row">
+                <div>
+                  <h3>Top 15 Employee Spenders</h3>
+                  <div class="card-subtitle">Staff members with highest spending authority and activity</div>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Employee</th>
+                      <th>Department</th>
+                      <th>Role</th>
+                      <th>Primary Location</th>
+                      <th>Total Spend (INR)</th>
+                      <th>Transactions</th>
+                      <th>Policy Violations</th>
+                    </tr>
+                  </thead>
+                  <tbody id="top-employees-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 6: TRANSACTION LEDGER ================= -->
+      <div id="tab-ledger" class="tab-pane" style="display: none;">
+        <div class="content-card">
+          <div class="card-title-row">
+            <div>
+              <h3>Interactive Spend Ledger</h3>
+              <div class="card-subtitle">Click on any transaction row to open the complete 31-field audit drawer</div>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Tx ID</th>
+                  <th>Date</th>
+                  <th>Employee / Dept</th>
+                  <th>Vendor</th>
+                  <th>Category</th>
+                  <th>Method</th>
+                  <th>Amount (INR)</th>
+                  <th>Status</th>
+                  <th>Risk Flags</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="tx-ledger-tbody"></tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Controls -->
+          <div class="pagination">
+            <div id="pagination-info" style="font-size: 13px; color: var(--text-muted);">Showing 1 - 25 of 910 transactions</div>
+            <div class="pagination-controls">
+              <button id="page-prev" class="page-btn">&larr; Previous</button>
+              <span id="page-current-display" style="font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; padding: 0 8px;">Page 1</span>
+              <button id="page-next" class="page-btn">Next &rarr;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 7: CFO BRIEFING & SUBMISSION REPORT ================= -->
+      <div id="tab-report" class="tab-pane" style="display: none;">
+        <div class="report-section">
+          <h2>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Executive Spend Analytics & Governance Memorandum
+          </h2>
+          <p>
+            <strong>To:</strong> Chief Financial Officer & Senior Leadership, Northstar Projects Pvt Ltd<br>
+            <strong>From:</strong> Finance Analytics & Corporate Controls Advisory<br>
+            <strong>Period of Review:</strong> January 2026 &ndash; September 2026 (9 Months) | <strong>Total Spend Reviewed:</strong> ₹47,879,735.55 (910 Transactions)
+          </p>
+
+          <hr style="border: none; border-top: 1px solid var(--border-subtle); margin: 20px 0;">
+
+          <h2>1. Working Dashboard Overview</h2>
+          <p>
+            We have engineered a comprehensive, responsive, executive-grade Spend Analytics Dashboard for Northstar Projects Pvt Ltd. The dashboard features:
+          </p>
+          <ul>
+            <li><strong>Dynamic Multidimensional Filtering:</strong> Drill down by Month, Department, Project Site, Cost Centre, Spend Category, Payment Method, Compliance Status, and Receipt Availability.</li>
+            <li><strong>Automated Forensic Audit Engine:</strong> One-click detection for structured smurfing (&lt;₹50K limit evasion), duplicate invoices, domestic FX billing, and unmanaged reimbursement spend.</li>
+            <li><strong>Budgetary Control Variance System:</strong> Month-on-month budget-vs-actual variance tracking by site and department, highlighting critical leakages.</li>
+            <li><strong>Governance & Approver Scorecard:</strong> Quantitative accountability metrics measuring manager overrides on non-compliant claims and approval turnaround times.</li>
+            <li><strong>Granular 31-Field Audit Drawer:</strong> Instant slide-over inspection of every transaction with master data mapping.</li>
+          </ul>
+
+          <hr style="border: none; border-top: 1px solid var(--border-subtle); margin: 20px 0;">
+
+          <h2>2. Top 3 Insights for the CFO</h2>
+
+          <div class="insight-box danger">
+            <h3 style="color: #b91c1c; margin-top: 0;">Insight 1: Severe Payment Channel Governance Failure &ndash; 66.6% (₹3.19 Crore) Disbursed via Informal UPI & Employee Reimbursements</h3>
+            <p>
+              In a heavy construction and infrastructure enterprise, high-value expenditures such as <strong>Contract Labour (₹11.54M)</strong>, <strong>Construction Materials (₹7.25M)</strong>, and <strong>Equipment Rentals (₹5.88M)</strong> must follow a strict Purchase Order &rarr; Goods Receipt Note (GRN) &rarr; Accounts Payable 3-way matching process with 30-day vendor credit terms.
+            </p>
+            <p>
+              Instead, <strong>traditional formal Vendor Payments account for ONLY 7.0% of spend (₹3.35M across 64 txs)</strong>. Meanwhile, <strong>38.1% (₹18.27M) is disbursed over instant UPI</strong>, and <strong>28.5% (₹13.62M) is settled via employee personal reimbursement claims</strong>. Site coordinators and project managers are paying labour contractors and equipment suppliers out of pocket or via mobile wallets.
+            </p>
+            <p>
+              <strong>CFO Impact:</strong> Total loss of working capital credit float, zero withholding tax (TDS) automation at source, risk of lost GST Input Tax Credits (ITC), and immense vulnerability to fictitious labour billing.
+            </p>
+            <button class="btn btn-secondary" onclick="window.applyPreset('upi-reimb')">Explore UPI & Reimbursements Lens</button>
+          </div>
+
+          <div class="insight-box warning">
+            <h3 style="color: #b45309; margin-top: 0;">Insight 2: "Finance HQ" Chronic Budgetary Overrun (+₹2.82M / +138% to +313% MoM) Caused by Cost Misallocation</h3>
+            <p>
+              While total company budget utilization appears artificially low (19.4% due to large, unspent project paper budgets of ₹246.5M), central <strong>Finance HQ - Bengaluru is deeply underwater every single month</strong>:
+            </p>
+            <ul>
+              <li>Allocated monthly budget: ~₹180K &ndash; ₹202K/month.</li>
+              <li>Actual monthly spend: ₹462K &ndash; ₹809K/month (over-budget by +138% in June, +157% in Feb, +174% in Jan, +188% in Apr, +236% in Aug, +276% in Mar, and a staggering <strong>+313% in July</strong>).</li>
+            </ul>
+            <p>
+              <strong>Root Cause:</strong> Finance executives (Kavya Nair, Pranav Patel, Shreya Sharma, Ananya Singh) are booking project-level capital expenditures—including <strong>₹1.83M to Apex Consulting</strong>, <strong>₹819K in heavy Equipment Rentals (PowerGen Rentals)</strong>, and <strong>₹434K in Construction Materials (BuildMart Supplies)</strong>—directly to the corporate Finance HQ cost center instead of allocating them to the respective project site codes (P-Alpha through P-Epsilon).
+            </p>
+            <button class="btn btn-secondary" onclick="state.filters.department='Finance'; state.filters.location='HQ - Bengaluru'; updateDashboard(); document.querySelector('[data-tab=\'budgets\']').click();">Inspect Finance HQ Variances</button>
+          </div>
+
+          <div class="insight-box highlight">
+            <h3 style="color: var(--volopay-purple); margin-top: 0;">Insight 3: Widespread Internal Control Overrides & Automated System Flaws (103 Manager Overrides + 15 Auto-Approved Violations)</h3>
+            <p>
+              Automated corporate finance controls flagged <strong>143 transactions (₹13.78M, or 28.8% of spend)</strong> as <em>Policy Non-Compliant</em>. However, the approval hierarchy functions as a rubber stamp:
+            </p>
+            <ul>
+              <li><strong>103 non-compliant transactions (₹9.09M) were Approved by line managers anyway</strong> (led by Diya Mehta with 14 overrides and Rahul Iyer with 12 overrides).</li>
+              <li><strong>15 non-compliant transactions (₹1.42M) were Auto-Approved by the ERP/system</strong> without human eyes, including ₹265,334 to SiteServe Contractors lacking receipts (T000566) and ₹219,930 to BuildMart Supplies missing approvals (T000394).</li>
+              <li><strong>₹5.93 Million across 132 transactions</strong> has NO receipt attached, yet 78% of these claims were approved and disbursed.</li>
+            </ul>
+            <button class="btn btn-secondary" onclick="window.applyPreset('forensic')">View Forensic Breakdown</button>
+          </div>
+
+          <hr style="border: none; border-top: 1px solid var(--border-subtle); margin: 20px 0;">
+
+          <h2>3. One Thing to Investigate Further</h2>
+
+          <div class="insight-box danger">
+            <h3 style="color: #b91c1c; margin-top: 0;">Priority Investigation: Intentional Transaction Structuring (Smurfing) by Diya Sharma at Pune Site 1</h3>
+            <p>
+              <strong>The Anomaly:</strong><br>
+              In reviewing transaction logs, we identified 6 transactions submitted by <strong>Diya Sharma (E1016, Operations Manager)</strong> at <em>Pune Site 1</em> payable to <strong>Metro Hardware</strong> via instant UPI for <em>"Urgent site tools purchase"</em>:
+            </p>
+            <ul>
+              <li><strong>14-Jul-2026:</strong> T000905 (₹49,800.00) + T000906 (₹49,750.00) &rarr; Same-day total: <strong>₹99,550.00</strong></li>
+              <li><strong>22-Aug-2026:</strong> T000907 (₹49,800.00) + T000908 (₹49,750.00) &rarr; Same-day total: <strong>₹99,550.00</strong></li>
+              <li><strong>08-Sep-2026:</strong> T000909 (₹49,800.00) + T000910 (₹49,750.00) &rarr; Same-day total: <strong>₹99,550.00</strong></li>
+            </ul>
+            <p>
+              <strong>Why This Demands Formal Investigation:</strong><br>
+              This is textbook <strong>structuring/smurfing</strong>. Northstar's operational authorization matrix or UPI single-transaction limit is set at ₹50,000. In each of the three instances, an identical ~₹100,000 purchase was split into two sub-₹50,000 tranches within minutes of each other. Furthermore, all 6 transactions were signed off by the same approver (Nisha Khanna) within a flat 2.0-hour turnaround without raising an alert.
+            </p>
+            <p>
+              <strong>Additional Information Required Before Drawing a Conclusion:</strong>
+            </p>
+            <ol style="margin-left: 20px; line-height: 1.8; color: #334155;">
+              <li><strong>Itemized Invoices & GST Bills from Metro Hardware:</strong> Inspect the physical or electronic tax invoices corresponding to DOC-812132, DOC-463784, DOC-342874, DOC-245138, DOC-742577, and DOC-619069 to determine if goods were actually received or if this represents split fictitious invoicing.</li>
+              <li><strong>Physical Asset Verification at Pune Site 1:</strong> Have internal audit conduct a physical inventory check of the tools allegedly procured under these purchase orders.</li>
+              <li><strong>UPI Beneficiary Bank Account Audit:</strong> Verify the VPA (Virtual Payment Address) and bank account details of the Metro Hardware recipient to ensure it is not an employee-linked or proxy account.</li>
+              <li><strong>Approver Interview (Nisha Khanna):</strong> Inquire whether Nisha Khanna was aware that these were simultaneous purchases on the same day and why they were not escalated as a single consolidated capital PO.</li>
+              <li><strong>Cross-Check with Duplicate Invoices:</strong> Cross-reference whether Metro Hardware invoices were also duplicated elsewhere, given that duplicate invoice <code>DOC-165800</code> (₹89,604.07) was also issued by Metro Hardware to Gaurav Bose.</li>
+            </ol>
+            <div style="margin-top: 14px;">
+              <button class="btn btn-danger" onclick="window.applyPreset('smurfing')">Launch Interactive Smurfing Audit View</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Slide-Over Drawer for Granular Transaction Audit -->
+    <div id="drawer-backdrop" class="drawer-backdrop"></div>
+    <aside id="tx-detail-drawer" class="drawer">
+      <div class="drawer-header">
+        <h3 id="drawer-tx-title">Transaction Details</h3>
+        <button class="btn btn-secondary" onclick="window.closeTxDrawer()" style="padding: 4px 10px;">✕ Close</button>
+      </div>
+      <div id="drawer-content-body" class="drawer-body"></div>
+    </aside>
+  </div>
+
+  <!-- Local Chart.js and Data scripts -->
+  <script src="chart.umd.min.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
